@@ -83,7 +83,7 @@
     "videojs-contrib-eme": "^3.2.0",
     "videojs-contrib-quality-levels": "^2.0.4",
     "videojs-generate-karma-config": "~5.3.1",
-    "videojs-generate-rollup-config": "~5.0.1",
+    "videojs-generate-rollup-config": "~5.0.2",
     "videojs-generator-verify": "~2.0.0",
     "videojs-standard": "^8.0.3"
   },
