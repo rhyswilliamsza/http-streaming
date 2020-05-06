@@ -841,6 +841,11 @@ export default class SegmentLoader extends videojs.EventTarget {
     }
 
     if (!oldPlaylist || oldPlaylist.uri !== newPlaylist.uri) {
+      if (this.sourceUpdater_.canChangeType()) {
+        // codecs may change on playlist change
+        this.startingMedia_ = null;
+      }
+
       this.trigger('playlistupdate');
       if (this.mediaIndex !== null || this.handlePartialData_) {
         // we must "resync" the segment loader when we switch renditions and
@@ -1451,11 +1456,10 @@ export default class SegmentLoader extends videojs.EventTarget {
     // When we have track info, determine what media types this loader is dealing with.
     // Guard against cases where we're not getting track info at all until we are
     // certain that all streams will provide it.
-    if (typeof this.startingMedia_ === 'undefined' && (trackInfo.hasAudio || trackInfo.hasVideo)) {
+    if (!this.startingMedia_) {
       this.startingMedia_ = trackInfo;
+      this.trigger('trackinfo');
     }
-
-    this.trigger('trackinfo');
 
     if (this.checkForIllegalMediaSwitch(trackInfo)) {
       return;

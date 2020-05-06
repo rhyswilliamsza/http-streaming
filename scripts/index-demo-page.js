@@ -256,7 +256,7 @@
           liveui: stateEls.liveui.checked,
           html5: {
             hls: {
-              overrideNative: !window.videojs.browser.IS_SAFARI
+              overrideNative: true
             }
           }
         });
