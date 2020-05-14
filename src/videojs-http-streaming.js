@@ -725,7 +725,9 @@ class HlsHandler extends Component {
       return;
     }
 
-    this.tech_.src(window.URL.createObjectURL(this.masterPlaylistController_.mediaSource));
+    this.mediaSourceUrl_ = window.URL.createObjectURL(this.masterPlaylistController_.mediaSource);
+
+    this.tech_.src(this.mediaSourceUrl_);
   }
 
   /**
@@ -824,6 +826,11 @@ class HlsHandler extends Component {
 
     if (this.tech_ && this.tech_.hls) {
       delete this.tech_.hls;
+    }
+
+    if (this.mediaSourceUrl_ && window.URL.revokeObjectURL) {
+      window.URL.revokeObjectURL(this.mediaSourceUrl_);
+      this.mediaSourceUrl_ = null;
     }
 
     super.dispose();
