@@ -1248,8 +1248,8 @@ export class MasterPlaylistController extends videojs.EventTarget {
   }
 
   getCodecsOrExclude_() {
-    const mainMedia = this.mainSegmentLoader_.startingMedia_ || {};
-    const audioMedia = this.audioSegmentLoader_.startingMedia_ || {};
+    const mainMedia = this.mainSegmentLoader_.currentMedia_ || this.mainSegmentLoader_.startingMedia_ || {};
+    const audioMedia = this.audioSegmentLoader_.currentMedia_ || this.audioSegmentLoader_.startingMedia_ || {};
     const isFmp4 = mainMedia.isFmp4 || audioMedia.isFmp4;
     const playlistCodecs = codecsForPlaylist(this.master(), this.media());
     const codecs = {};
@@ -1369,6 +1369,8 @@ export class MasterPlaylistController extends videojs.EventTarget {
 
     // playlist was excluded, do nothing.
     if (!codecs) {
+      this.mainSegmentLoader_.startingMedia_ = void 0;
+      this.audioSegmentLoader_.startingMedia_ = void 0;
       return;
     }
 

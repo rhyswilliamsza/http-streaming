@@ -386,6 +386,7 @@ export default class SegmentLoader extends videojs.EventTarget {
     this.hls_ = settings.hls;
     this.loaderType_ = settings.loaderType;
     this.startingMedia_ = void 0;
+    this.currentMedia_ = void 0;
     this.segmentMetadataTrack_ = settings.segmentMetadataTrack;
     this.goalBufferLength_ = settings.goalBufferLength;
     this.sourceType_ = settings.sourceType;
@@ -485,12 +486,6 @@ export default class SegmentLoader extends videojs.EventTarget {
     });
 
     this.sourceUpdater_.on('ready', () => {
-      if (this.hasEnoughInfoToAppend_()) {
-        this.processCallQueue_();
-      }
-    });
-
-    this.on('trackinfo', () => {
       if (this.hasEnoughInfoToAppend_()) {
         this.processCallQueue_();
       }
@@ -895,9 +890,7 @@ export default class SegmentLoader extends videojs.EventTarget {
         // out before we start adding more data
         this.resyncLoader();
       }
-      // make sure that we fire a new trackinfo for playlist change
-      // just in case codecs change.
-      // this.startingMedia_ = void 0;
+      this.currentMedia_ = void 0;
       this.trigger('playlistupdate');
 
       // the rest of this function depends on `oldPlaylist` being defined
@@ -1506,10 +1499,22 @@ export default class SegmentLoader extends videojs.EventTarget {
     // When we have track info, determine what media types this loader is dealing with.
     // Guard against cases where we're not getting track info at all until we are
     // certain that all streams will provide it.
-    if ((trackInfo.hasVideo || trackInfo.hasAudio) && !shallowEqual(this.startingMedia_, trackInfo)) {
-      this.logger_('trackinfo update', trackInfo);
-      this.startingMedia_ = trackInfo;
-      this.trigger('trackinfo');
+    if ((trackInfo.hasVideo || trackInfo.hasAudio)) {
+      let changed = false;
+
+      if (!this.startingMedia_) {
+        changed = true;
+        this.startingMedia_ = trackInfo;
+      }
+      if (!shallowEqual(this.currentMedia_, trackInfo)) {
+        this.currentMedia_ = trackInfo;
+        changed = true;
+      }
+
+      if (changed) {
+        this.logger_('trackinfo update', trackInfo);
+        this.trigger('trackinfo');
+      }
     }
 
   }
