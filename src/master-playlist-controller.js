@@ -544,7 +544,7 @@ export class MasterPlaylistController extends videojs.EventTarget {
       const codecs = this.getCodecsOrExclude_();
 
       // no codecs, excluded
-      if (!codecs) {
+      if (!codecs || !this.sourceUpdater_.canCodecSwitch()) {
         return;
       }
 
