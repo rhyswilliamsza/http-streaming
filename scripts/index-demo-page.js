@@ -256,7 +256,7 @@
           liveui: stateEls.liveui.checked,
           html5: {
             hls: {
-              overrideNative: true
+              overrideNative: !window.videojs.browser.IS_SAFARI
             }
           }
         });
@@ -322,10 +322,6 @@
 
     sources.addEventListener('change', function(event) {
       var selectedOption = sources.options[sources.selectedIndex];
-
-      if (!selectedOption) {
-        return;
-      }
       var src = selectedOption.value;
 
       stateEls.url.value = src;
