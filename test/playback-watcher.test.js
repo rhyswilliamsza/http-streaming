@@ -27,7 +27,7 @@ QUnit.module('PlaybackWatcher', {
 
     // setup a player
     this.player = createPlayer({html5: {
-      hls: {
+      vhs: {
         overrideNative: true
       }
     }});
@@ -43,11 +43,15 @@ QUnit.module('PlaybackWatcher', {
 });
 
 QUnit.test('skips over gap in firefox with waiting event', function(assert) {
+  let vhsGapSkipEvents = 0;
   let hlsGapSkipEvents = 0;
 
   this.player.autoplay(true);
 
   this.player.tech_.on('usage', (event) => {
+    if (event.name === 'vhs-gap-skip') {
+      vhsGapSkipEvents++;
+    }
     if (event.name === 'hls-gap-skip') {
       hlsGapSkipEvents++;
     }
@@ -74,6 +78,7 @@ QUnit.test('skips over gap in firefox with waiting event', function(assert) {
   this.player.tech_.trigger('playing');
   this.clock.tick(1);
 
+  assert.equal(vhsGapSkipEvents, 0, 'there is no skipped gap');
   assert.equal(hlsGapSkipEvents, 0, 'there is no skipped gap');
   // seek to 10 seconds and wait 12 seconds
   this.player.currentTime(10);
@@ -85,15 +90,20 @@ QUnit.test('skips over gap in firefox with waiting event', function(assert) {
     Math.round(this.player.currentTime()),
     20, 'Player seeked over gap after timer'
   );
+  assert.equal(vhsGapSkipEvents, 1, 'there is one skipped gap');
   assert.equal(hlsGapSkipEvents, 1, 'there is one skipped gap');
 });
 
 QUnit.test('skips over gap in chrome without waiting event', function(assert) {
+  let vhsGapSkipEvents = 0;
   let hlsGapSkipEvents = 0;
 
   this.player.autoplay(true);
 
   this.player.tech_.on('usage', (event) => {
+    if (event.name === 'vhs-gap-skip') {
+      vhsGapSkipEvents++;
+    }
     if (event.name === 'hls-gap-skip') {
       hlsGapSkipEvents++;
     }
@@ -120,6 +130,7 @@ QUnit.test('skips over gap in chrome without waiting event', function(assert) {
   this.player.tech_.trigger('playing');
   this.clock.tick(1);
 
+  assert.equal(vhsGapSkipEvents, 0, 'there is no skipped gap');
   assert.equal(hlsGapSkipEvents, 0, 'there is no skipped gap');
 
   // seek to 10 seconds & simulate chrome waiting event
@@ -136,15 +147,20 @@ QUnit.test('skips over gap in chrome without waiting event', function(assert) {
     Math.round(this.player.currentTime()),
     20, 'Player seeked over gap after timer'
   );
+  assert.equal(vhsGapSkipEvents, 1, 'there is one skipped gap');
   assert.equal(hlsGapSkipEvents, 1, 'there is one skipped gap');
 });
 
 QUnit.test('skips over gap in Chrome due to video underflow', function(assert) {
+  let vhsVideoUnderflowEvents = 0;
   let hlsVideoUnderflowEvents = 0;
 
   this.player.autoplay(true);
 
   this.player.tech_.on('usage', (event) => {
+    if (event.name === 'vhs-video-underflow') {
+      vhsVideoUnderflowEvents++;
+    }
     if (event.name === 'hls-video-underflow') {
       hlsVideoUnderflowEvents++;
     }
@@ -169,18 +185,22 @@ QUnit.test('skips over gap in Chrome due to video underflow', function(assert) {
   this.player.tech_.trigger('playing');
   this.clock.tick(1);
 
+  assert.equal(vhsVideoUnderflowEvents, 0, 'no video underflow event got triggered');
   assert.equal(hlsVideoUnderflowEvents, 0, 'no video underflow event got triggered');
 
   this.player.currentTime(13);
 
   const seeks = [];
 
-  this.player.vhs.setCurrentTime = (time) => seeks.push(time);
+  this.player.tech_.setCurrentTime = (time) => {
+    seeks.push(time);
+  };
 
   this.player.tech_.trigger('waiting');
 
   assert.equal(seeks.length, 1, 'one seek');
   assert.equal(seeks[0], 13, 'player seeked to current time');
+  assert.equal(vhsVideoUnderflowEvents, 1, 'triggered a video underflow event');
   assert.equal(hlsVideoUnderflowEvents, 1, 'triggered a video underflow event');
 });
 
@@ -210,7 +230,7 @@ QUnit.test(
       seeks.push(time);
     };
 
-    this.player.tech_.hls.playbackWatcher_.seekable = () => {
+    this.player.tech_.vhs.playbackWatcher_.seekable = () => {
       return videojs.createTimeRanges([[1, 45]]);
     };
 
@@ -258,11 +278,11 @@ QUnit.test('seeks to current time when stuck inside buffered region', function(a
   // Loop has run through once, `lastRecordedTime` should have been recorded
   // and `consecutiveUpdates` set to 0 to begin count
   assert.equal(
-    this.player.tech_.hls.playbackWatcher_.lastRecordedTime, 10,
+    this.player.tech_.vhs.playbackWatcher_.lastRecordedTime, 10,
     'Playback Watcher stored current time'
   );
   assert.equal(
-    this.player.tech_.hls.playbackWatcher_.consecutiveUpdates, 0,
+    this.player.tech_.vhs.playbackWatcher_.consecutiveUpdates, 0,
     'consecutiveUpdates set to 0'
   );
 
@@ -271,7 +291,7 @@ QUnit.test('seeks to current time when stuck inside buffered region', function(a
 
   // Loop should increment consecutive updates until it is >= 5
   assert.equal(
-    this.player.tech_.hls.playbackWatcher_.consecutiveUpdates, 1,
+    this.player.tech_.vhs.playbackWatcher_.consecutiveUpdates, 1,
     'consecutiveUpdates incremented'
   );
 
@@ -280,7 +300,7 @@ QUnit.test('seeks to current time when stuck inside buffered region', function(a
 
   // Loop should increment consecutive updates until it is >= 5
   assert.equal(
-    this.player.tech_.hls.playbackWatcher_.consecutiveUpdates, 2,
+    this.player.tech_.vhs.playbackWatcher_.consecutiveUpdates, 2,
     'consecutiveUpdates incremented'
   );
 
@@ -289,7 +309,7 @@ QUnit.test('seeks to current time when stuck inside buffered region', function(a
 
   // Loop should increment consecutive updates until it is >= 5
   assert.equal(
-    this.player.tech_.hls.playbackWatcher_.consecutiveUpdates, 3,
+    this.player.tech_.vhs.playbackWatcher_.consecutiveUpdates, 3,
     'consecutiveUpdates incremented'
   );
 
@@ -298,7 +318,7 @@ QUnit.test('seeks to current time when stuck inside buffered region', function(a
 
   // Loop should increment consecutive updates until it is >= 5
   assert.equal(
-    this.player.tech_.hls.playbackWatcher_.consecutiveUpdates, 4,
+    this.player.tech_.vhs.playbackWatcher_.consecutiveUpdates, 4,
     'consecutiveUpdates incremented'
   );
 
@@ -307,7 +327,7 @@ QUnit.test('seeks to current time when stuck inside buffered region', function(a
 
   // Loop should increment consecutive updates until it is >= 5
   assert.equal(
-    this.player.tech_.hls.playbackWatcher_.consecutiveUpdates, 5,
+    this.player.tech_.vhs.playbackWatcher_.consecutiveUpdates, 5,
     'consecutiveUpdates incremented'
   );
 
@@ -316,7 +336,7 @@ QUnit.test('seeks to current time when stuck inside buffered region', function(a
 
   // Loop should see consecutive updates >= 5, call `waiting_`
   assert.equal(
-    this.player.tech_.hls.playbackWatcher_.consecutiveUpdates, 0,
+    this.player.tech_.vhs.playbackWatcher_.consecutiveUpdates, 0,
     'consecutiveUpdates reset'
   );
 
@@ -363,11 +383,11 @@ QUnit.test(
     // Loop has run through once, `lastRecordedTime` should have been recorded
     // and `consecutiveUpdates` set to 0 to begin count
     assert.equal(
-      this.player.tech_.hls.playbackWatcher_.lastRecordedTime, 29.98,
+      this.player.tech_.vhs.playbackWatcher_.lastRecordedTime, 29.98,
       'Playback Watcher stored current time'
     );
     assert.equal(
-      this.player.tech_.hls.playbackWatcher_.consecutiveUpdates, 0,
+      this.player.tech_.vhs.playbackWatcher_.consecutiveUpdates, 0,
       'consecutiveUpdates set to 0'
     );
 
@@ -378,11 +398,11 @@ QUnit.test(
     // progress while at the end of the buffer. Since the currentTime is at the end of the
     // buffer, `consecutiveUpdates` should not be incremented
     assert.equal(
-      this.player.tech_.hls.playbackWatcher_.lastRecordedTime, 29.98,
+      this.player.tech_.vhs.playbackWatcher_.lastRecordedTime, 29.98,
       'Playback Watcher stored current time'
     );
     assert.equal(
-      this.player.tech_.hls.playbackWatcher_.consecutiveUpdates, 0,
+      this.player.tech_.vhs.playbackWatcher_.consecutiveUpdates, 0,
       'consecutiveUpdates should still be 0'
     );
 
@@ -395,7 +415,9 @@ QUnit.test('fires notifications when activated', function(assert) {
   let buffered = [[]];
   const seekable = [[]];
   let currentTime = 0;
+  let vhsLiveResyncEvents = 0;
   let hlsLiveResyncEvents = 0;
+  let vhsVideoUnderflowEvents = 0;
   let hlsVideoUnderflowEvents = 0;
 
   this.player.src({
@@ -418,7 +440,7 @@ QUnit.test('fires notifications when activated', function(assert) {
       }
     };
   };
-  const playbackWatcher = this.player.tech_.hls.playbackWatcher_;
+  const playbackWatcher = this.player.tech_.vhs.playbackWatcher_;
 
   playbackWatcher.seekable = function() {
     return {
@@ -432,8 +454,14 @@ QUnit.test('fires notifications when activated', function(assert) {
     };
   };
   this.player.tech_.on('usage', (event) => {
+    if (event.name === 'vhs-live-resync') {
+      vhsLiveResyncEvents++;
+    }
     if (event.name === 'hls-live-resync') {
       hlsLiveResyncEvents++;
+    }
+    if (event.name === 'vhs-video-underflow') {
+      vhsVideoUnderflowEvents++;
     }
     if (event.name === 'hls-video-underflow') {
       hlsVideoUnderflowEvents++;
@@ -443,13 +471,16 @@ QUnit.test('fires notifications when activated', function(assert) {
   currentTime = 19;
   seekable[0] = [20, 30];
   playbackWatcher.waiting_();
+  assert.equal(vhsLiveResyncEvents, 1, 'triggered a liveresync event');
   assert.equal(hlsLiveResyncEvents, 1, 'triggered a liveresync event');
 
   currentTime = 12;
   seekable[0] = [0, 100];
   buffered = [[0, 9], [10, 20]];
   playbackWatcher.waiting_();
+  assert.equal(vhsVideoUnderflowEvents, 1, 'triggered a videounderflow event');
   assert.equal(hlsVideoUnderflowEvents, 1, 'triggered a videounderflow event');
+  assert.equal(vhsLiveResyncEvents, 1, 'did not trigger an additional liveresync event');
   assert.equal(hlsLiveResyncEvents, 1, 'did not trigger an additional liveresync event');
 });
 
@@ -469,7 +500,7 @@ QUnit.test('fixes bad seeks', function(assert) {
   this.player.tech_.trigger('playing');
   this.clock.tick(1);
 
-  const playbackWatcher = this.player.tech_.hls.playbackWatcher_;
+  const playbackWatcher = this.player.tech_.vhs.playbackWatcher_;
   const seeks = [];
   let seekable;
   let seeking;
@@ -480,9 +511,11 @@ QUnit.test('fixes bad seeks', function(assert) {
     off: () => {},
     seeking: () => seeking,
     currentTime: () => currentTime,
+    setCurrentTime: (time) => {
+      seeks.push(time);
+    },
     buffered: () => videojs.createTimeRanges()
   };
-  this.player.vhs.setCurrentTime = (time) => seeks.push(time);
 
   currentTime = 50;
   seekable = videojs.createTimeRanges([[1, 45]]);
@@ -521,7 +554,7 @@ QUnit.test('corrects seek outside of seekable', function(assert) {
   this.player.tech_.trigger('playing');
   this.clock.tick(1);
 
-  const playbackWatcher = this.player.tech_.hls.playbackWatcher_;
+  const playbackWatcher = this.player.tech_.vhs.playbackWatcher_;
   const seeks = [];
   let seekable;
   let seeking;
@@ -531,12 +564,14 @@ QUnit.test('corrects seek outside of seekable', function(assert) {
   playbackWatcher.tech_ = {
     off: () => {},
     seeking: () => seeking,
+    setCurrentTime: (time) => {
+      seeks.push(time);
+    },
     currentTime: () => currentTime,
     // mocked out
     paused: () => false,
     buffered: () => videojs.createTimeRanges()
   };
-  this.player.vhs.setCurrentTime = (time) => seeks.push(time);
 
   // waiting
 
@@ -610,7 +645,7 @@ QUnit.test(
     this.player.tech_.trigger('playing');
     this.clock.tick(1);
 
-    const playbackWatcher = this.player.tech_.hls.playbackWatcher_;
+    const playbackWatcher = this.player.tech_.vhs.playbackWatcher_;
     const seeks = [];
     let seekable;
     let seeking;
@@ -620,12 +655,15 @@ QUnit.test(
     playbackWatcher.tech_ = {
       off: () => {},
       seeking: () => seeking,
+      setCurrentTime: (time) => {
+        seeks.push(time);
+      },
+
       currentTime: () => currentTime,
       // mocked out
       paused: () => false,
       buffered: () => videojs.createTimeRanges()
     };
-    this.player.vhs.setCurrentTime = (time) => seeks.push(time);
 
     playbackWatcher.allowSeeksWithinUnsafeLiveWindow = true;
 
@@ -669,7 +707,7 @@ QUnit.test('calls fixesBadSeeks_ on seekablechanged', function(assert) {
   this.player.tech_.trigger('playing');
   this.clock.tick(1);
 
-  const playbackWatcher = this.player.tech_.hls.playbackWatcher_;
+  const playbackWatcher = this.player.tech_.vhs.playbackWatcher_;
   let fixesBadSeeks_ = 0;
 
   playbackWatcher.fixesBadSeeks_ = () => fixesBadSeeks_++;
@@ -695,7 +733,7 @@ QUnit.test('jumps to buffered content if seeking just before', function(assert) 
   this.player.tech_.trigger('playing');
   this.clock.tick(1);
 
-  const playbackWatcher = this.player.tech_.hls.playbackWatcher_;
+  const playbackWatcher = this.player.tech_.vhs.playbackWatcher_;
   const seeks = [];
   let currentTime;
   let buffered;
@@ -704,10 +742,13 @@ QUnit.test('jumps to buffered content if seeking just before', function(assert) 
   playbackWatcher.tech_ = {
     off: () => {},
     seeking: () => true,
+    setCurrentTime: (time) => {
+      seeks.push(time);
+    },
     currentTime: () => currentTime,
     buffered: () => buffered
   };
-  this.player.vhs.setCurrentTime = (time) => seeks.push(time);
+  this.player.tech(true).vhs.setCurrentTime = (time) => seeks.push(time);
 
   currentTime = 10;
   // target duration is 10
@@ -770,7 +811,7 @@ QUnit.module('PlaybackWatcher download detection', {
     this.setup = function(src = {src: 'media.m3u8', type: 'application/vnd.apple.mpegurl'}) {
       // setup a player
       this.player = createPlayer({html5: {
-        hls: {
+        vhs: {
           overrideNative: true
         }
       }});
@@ -791,8 +832,8 @@ QUnit.module('PlaybackWatcher download detection', {
       this.usageEvents = {};
       this.mpcErrors = 0;
 
-      this.playbackWatcher = this.player.vhs.playbackWatcher_;
-      this.mpc = this.player.vhs.masterPlaylistController_;
+      this.playbackWatcher = this.player.tech(true).vhs.playbackWatcher_;
+      this.mpc = this.player.tech(true).vhs.masterPlaylistController_;
       this.mpc.on('error', () => this.mpcErrors++);
 
       this.player.tech_.on('usage', (event) => {
@@ -848,6 +889,7 @@ loaderTypes.forEach(function(type) {
     expectedUsage[`vhs-${type}-download-exclusion`] = 1;
 
     if (type !== 'subtitle') {
+      expectedUsage['vhs-rendition-blacklisted'] = 1;
       expectedUsage['hls-rendition-blacklisted'] = 1;
     }
 
@@ -899,6 +941,7 @@ loaderTypes.forEach(function(type) {
         const expectedUsage = {};
 
         expectedUsage[`vhs-${type}-download-exclusion`] = 1;
+        expectedUsage['vhs-rendition-blacklisted'] = 1;
         expectedUsage['hls-rendition-blacklisted'] = 1;
 
         assert.deepEqual(this.usageEvents, expectedUsage, 'usage as expected');

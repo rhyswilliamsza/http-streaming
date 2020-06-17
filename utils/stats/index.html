@@ -253,7 +253,7 @@
         }
       }
 
-      videojs.options.hls.overrideNative = overrideNative === 'on';
+      videojs.options.vhs.overrideNative = overrideNative === 'on';
 
       var type = document.getElementById('url-content-type').value;
       // use the form data to add a src to the player
@@ -328,33 +328,33 @@
           // buffered
           bufferedStat.textContent = getBuffered(player.buffered());
           videoBufferedStat.textContent = getBuffered(
-            player.vhs.masterPlaylistController_.mainSegmentLoader_.sourceUpdater_.videoBuffer &&
-            player.vhs.masterPlaylistController_.mainSegmentLoader_.sourceUpdater_.videoBuffer.buffered
+            player.tech(true).vhs.masterPlaylistController_.mainSegmentLoader_.sourceUpdater_.videoBuffer &&
+            player.tech(true).vhs.masterPlaylistController_.mainSegmentLoader_.sourceUpdater_.videoBuffer.buffered
           );
 
           // demuxed audio
           var audioBuffer = getBuffered(
-            player.vhs.masterPlaylistController_.audioSegmentLoader_.sourceUpdater_.audioBuffer &&
-            player.vhs.masterPlaylistController_.audioSegmentLoader_.sourceUpdater_.audioBuffer.buffered
+            player.tech(true).vhs.masterPlaylistController_.audioSegmentLoader_.sourceUpdater_.audioBuffer &&
+            player.tech(true).vhs.masterPlaylistController_.audioSegmentLoader_.sourceUpdater_.audioBuffer.buffered
           );
 
           // muxed audio
           if (!audioBuffer) {
             audioBuffer = getBuffered(
-              player.vhs.masterPlaylistController_.mainSegmentLoader_.sourceUpdater_.audioBuffer &&
-              player.vhs.masterPlaylistController_.mainSegmentLoader_.sourceUpdater_.audioBuffer.buffered
+              player.tech(true).vhs.masterPlaylistController_.mainSegmentLoader_.sourceUpdater_.audioBuffer &&
+              player.tech(true).vhs.masterPlaylistController_.mainSegmentLoader_.sourceUpdater_.audioBuffer.buffered
             );
           }
           audioBufferedStat.textContent = audioBuffer;
 
-          if (player.vhs.masterPlaylistController_.audioSegmentLoader_.sourceUpdater_.audioBuffer) {
-            audioTimestampOffset.textContent = player.vhs.masterPlaylistController_.audioSegmentLoader_.sourceUpdater_.audioBuffer.timestampOffset;
-          } else if (player.vhs.masterPlaylistController_.mainSegmentLoader_.sourceUpdater_.audioBuffer) {
-            audioTimestampOffset.textContent = player.vhs.masterPlaylistController_.mainSegmentLoader_.sourceUpdater_.audioBuffer.timestampOffset;
+          if (player.tech(true).vhs.masterPlaylistController_.audioSegmentLoader_.sourceUpdater_.audioBuffer) {
+            audioTimestampOffset.textContent = player.tech(true).vhs.masterPlaylistController_.audioSegmentLoader_.sourceUpdater_.audioBuffer.timestampOffset;
+          } else if (player.tech(true).vhs.masterPlaylistController_.mainSegmentLoader_.sourceUpdater_.audioBuffer) {
+            audioTimestampOffset.textContent = player.tech(true).vhs.masterPlaylistController_.mainSegmentLoader_.sourceUpdater_.audioBuffer.timestampOffset;
           }
 
-          if (player.vhs.masterPlaylistController_.mainSegmentLoader_.sourceUpdater_.videoBuffer) {
-            videoTimestampOffset.textContent = player.vhs.masterPlaylistController_.mainSegmentLoader_.sourceUpdater_.videoBuffer.timestampOffset;
+          if (player.tech(true).vhs.masterPlaylistController_.mainSegmentLoader_.sourceUpdater_.videoBuffer) {
+            videoTimestampOffset.textContent = player.tech(true).vhs.masterPlaylistController_.mainSegmentLoader_.sourceUpdater_.videoBuffer.timestampOffset;
           }
 
           // seekable
@@ -372,14 +372,14 @@
           }
 
           // bitrates
-          var playlist = player.tech_.hls.playlists.media();
+          var playlist = player.tech_.vhs.playlists.media();
           if (playlist && playlist.attributes && playlist.attributes.BANDWIDTH) {
             videoBitrateState.textContent = (playlist.attributes.BANDWIDTH / 1024).toLocaleString(undefined, {
               maximumFractionDigits: 1
             }) + ' kbps';
           }
-          if (player.tech_.hls.bandwidth) {
-            measuredBitrateStat.textContent = (player.tech_.hls.bandwidth / 1024).toLocaleString(undefined, {
+          if (player.tech_.vhs.bandwidth) {
+            measuredBitrateStat.textContent = (player.tech_.vhs.bandwidth / 1024).toLocaleString(undefined, {
               maximumFractionDigits: 1
             }) + ' kbps';
           }
@@ -397,8 +397,8 @@
         trackEventCount('seeking', '.seeking-count');
         trackEventCount('seeked', '.seeked-count');
 
-        videojs.Hls.displayStats(document.querySelector('.switching-stats'), player);
-        videojs.Hls.displayCues(document.querySelector('.segment-timeline'), player);
+        videojs.Vhs.displayStats(document.querySelector('.switching-stats'), player);
+        videojs.Vhs.displayCues(document.querySelector('.segment-timeline'), player);
 
         // setup quality levels
         var qualityLevels = player.qualityLevels();

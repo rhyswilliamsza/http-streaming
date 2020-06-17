@@ -201,8 +201,8 @@
       saveState();
 
       window.videojs.options = window.videojs.options || {};
-      window.videojs.options.hls = window.videojs.options.hls || {};
-      window.videojs.options.hls.handlePartialData = event.target.checked;
+      window.videojs.options.vhs = window.videojs.options.vhs || {};
+      window.videojs.options.vhs.handlePartialData = event.target.checked;
 
       if (window.player) {
         window.player.src(window.player.currentSource());
@@ -255,8 +255,8 @@
           },
           liveui: stateEls.liveui.checked,
           html5: {
-            hls: {
-              overrideNative: !window.videojs.browser.IS_SAFARI
+            vhs: {
+              overrideNative: true
             }
           }
         });
@@ -322,6 +322,10 @@
 
     sources.addEventListener('change', function(event) {
       var selectedOption = sources.options[sources.selectedIndex];
+
+      if (!selectedOption) {
+        return;
+      }
       var src = selectedOption.value;
 
       stateEls.url.value = src;
