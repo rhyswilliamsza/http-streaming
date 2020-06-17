@@ -1,6 +1,6 @@
 import videojs from 'video.js';
 
-export const buffered = (videoBuffer, audioBuffer, audioDisabled) => {
+export const bufferedIntersection = (videoBuffer, audioBuffer, audioDisabled) => {
   let start = null;
   let end = null;
   let arity = 0;

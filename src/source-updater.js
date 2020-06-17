@@ -4,21 +4,15 @@
 import videojs from 'video.js';
 import logger from './util/logger';
 import noop from './util/noop';
-import { buffered } from './util/buffer';
+import { bufferedIntersection } from './util/buffer';
 import {getMimeForCodec} from '@videojs/vhs-utils/dist/codecs.js';
 import window from 'global/window';
+import toTitleCase from './util/to-title-case.js';
 
 const bufferTypes = [
   'video',
   'audio'
 ];
-const toTitleCase = function(string) {
-  if (typeof string !== 'string') {
-    return string;
-  }
-
-  return string.replace(/./, (w) => w.toUpperCase());
-};
 
 const updating = (type, sourceUpdater) => {
   const sourceBuffer = sourceUpdater[`${type}Buffer`];
@@ -569,7 +563,7 @@ export default class SourceUpdater extends videojs.EventTarget {
     const video = inSourceBuffers(this.mediaSource, this.videoBuffer) ? this.videoBuffer : null;
     const audio = inSourceBuffers(this.mediaSource, this.audioBuffer) ? this.audioBuffer : null;
 
-    return buffered(video, audio);
+    return bufferedIntersection(video, audio);
   }
 
   /**
