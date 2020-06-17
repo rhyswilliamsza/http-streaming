@@ -1690,7 +1690,7 @@ QUnit.test('blacklists incompatible playlists by codec, without codec switching'
   const loader = mpc.mainSegmentLoader_;
   const master = this.player.tech_.vhs.playlists.master;
 
-  mpc.sourceUpdater_.canCodecSwitch = () => false;
+  mpc.sourceUpdater_.canChangeType = () => false;
 
   loader.startingMedia_ = {hasVideo: true, hasAudio: true};
   loader.trigger('trackinfo');
@@ -1746,11 +1746,11 @@ QUnit.test('does not blacklist incompatible codecs with codec switching', functi
   // media
   this.standardXHRResponse(this.requests.shift());
 
-  const mpc = this.player.tech_.hls.masterPlaylistController_;
+  const mpc = this.player.tech_.vhs.masterPlaylistController_;
   const loader = mpc.mainSegmentLoader_;
-  const master = this.player.tech_.hls.playlists.master;
+  const master = this.player.tech_.vhs.playlists.master;
 
-  mpc.sourceUpdater_.canCodecSwitch = () => true;
+  mpc.sourceUpdater_.canChangeType = () => true;
 
   loader.startingMedia_ = {hasVideo: true, hasAudio: true};
   loader.trigger('trackinfo');

@@ -1385,7 +1385,7 @@ QUnit.test('blacklists switching between playlists with different codecs', funct
 
   const mpc = this.masterPlaylistController;
 
-  mpc.sourceUpdater_.canCodecSwitch = () => false;
+  mpc.sourceUpdater_.canChangeType = () => false;
 
   let debugLogs = [];
 
@@ -4925,7 +4925,7 @@ QUnit.test('excludes on codec switch if codec switching not supported', function
 
   // sourceUpdater_ already setup
   this.mpc.sourceUpdater_.ready = () => true;
-  this.mpc.sourceUpdater_.canCodecSwitch = () => false;
+  this.mpc.sourceUpdater_.canChangeType = () => false;
   this.mpc.sourceUpdater_.codecs = {
     audio: 'mp4a.40.2',
     video: 'avc1.4c400d'
@@ -4965,7 +4965,7 @@ QUnit.test('does not exclude on codec switch between the same base codec', funct
 
   // sourceUpdater_ already setup
   this.mpc.sourceUpdater_.ready = () => true;
-  this.mpc.sourceUpdater_.canCodecSwitch = () => false;
+  this.mpc.sourceUpdater_.canChangeType = () => false;
   this.mpc.sourceUpdater_.codecs = {
     audio: 'mp4a.40.2',
     video: 'avc1.4c400d'
@@ -4990,7 +4990,7 @@ QUnit.test('main loader only trackinfo works as expected', function(assert) {
     assert.deepEqual(codecs, expectedCodecs, 'create source buffers codecs as expected');
     createBuffers++;
   };
-  this.mpc.sourceUpdater_.codecSwitch = (codecs) => {
+  this.mpc.sourceUpdater_.addOrChangeSourceBuffers = (codecs) => {
     assert.deepEqual(codecs, expectedCodecs, 'codec switch as expected');
     switchBuffers++;
   };
@@ -5012,10 +5012,10 @@ QUnit.test('main loader only trackinfo works as expected', function(assert) {
   this.mpc.mainSegmentLoader_.trigger('trackinfo');
 
   assert.equal(createBuffers, 1, 'createSourceBuffers called');
-  assert.equal(switchBuffers, 0, 'codecSwitch not called');
+  assert.equal(switchBuffers, 0, 'addOrChangeSourceBuffers not called');
 
   this.mpc.sourceUpdater_.ready = () => true;
-  this.mpc.sourceUpdater_.canCodecSwitch = () => true;
+  this.mpc.sourceUpdater_.canChangeType = () => true;
 
   this.contentSetup({
     mainStartingMedia: {
@@ -5035,7 +5035,7 @@ QUnit.test('main loader only trackinfo works as expected', function(assert) {
   this.mpc.mainSegmentLoader_.trigger('trackinfo');
 
   assert.equal(createBuffers, 1, 'createBuffers not called');
-  assert.equal(switchBuffers, 1, 'codecSwitch called');
+  assert.equal(switchBuffers, 1, 'addOrChangeSourceBuffers called');
 });
 
 QUnit.test('main & audio loader only trackinfo works as expected', function(assert) {
@@ -5048,7 +5048,7 @@ QUnit.test('main & audio loader only trackinfo works as expected', function(asse
     assert.deepEqual(codecs, expectedCodecs, 'create source buffers codecs as expected');
     createBuffers++;
   };
-  this.mpc.sourceUpdater_.codecSwitch = (codecs) => {
+  this.mpc.sourceUpdater_.addOrChangeSourceBuffers = (codecs) => {
     assert.deepEqual(codecs, expectedCodecs, 'codec switch as expected');
     switchBuffers++;
   };
@@ -5071,7 +5071,7 @@ QUnit.test('main & audio loader only trackinfo works as expected', function(asse
   this.mpc.mainSegmentLoader_.trigger('trackinfo');
 
   assert.equal(createBuffers, 0, 'createSourceBuffers not called');
-  assert.equal(switchBuffers, 0, 'codecSwitch not called');
+  assert.equal(switchBuffers, 0, 'addOrChangeSourceBuffers not called');
 
   this.mpc.audioSegmentLoader_.startingMedia_ = {
     hasVideo: false,
@@ -5082,10 +5082,10 @@ QUnit.test('main & audio loader only trackinfo works as expected', function(asse
   this.mpc.audioSegmentLoader_.trigger('trackinfo');
 
   assert.equal(createBuffers, 1, 'createSourceBuffers called');
-  assert.equal(switchBuffers, 0, 'codecSwitch not called');
+  assert.equal(switchBuffers, 0, 'addOrChangeSourceBuffers not called');
 
   this.mpc.sourceUpdater_.ready = () => true;
-  this.mpc.sourceUpdater_.canCodecSwitch = () => true;
+  this.mpc.sourceUpdater_.canChangeType = () => true;
 
   this.mpc.mainSegmentLoader_.currentMedia_ = {
     videoCodec: 'avc1.4c400e',
@@ -5101,7 +5101,7 @@ QUnit.test('main & audio loader only trackinfo works as expected', function(asse
   this.mpc.mainSegmentLoader_.trigger('trackinfo');
 
   assert.equal(createBuffers, 1, 'createBuffers not called');
-  assert.equal(switchBuffers, 1, 'codecSwitch called');
+  assert.equal(switchBuffers, 1, 'addOrChangeSourceBuffers called');
 
   this.mpc.audioSegmentLoader_.startingMedia_ = {
     hasVideo: false,
@@ -5117,5 +5117,5 @@ QUnit.test('main & audio loader only trackinfo works as expected', function(asse
   this.mpc.audioSegmentLoader_.trigger('trackinfo');
 
   assert.equal(createBuffers, 1, 'createBuffers not called');
-  assert.equal(switchBuffers, 2, 'codecSwitch called');
+  assert.equal(switchBuffers, 2, 'addOrChangeSourceBuffers called');
 });

@@ -550,11 +550,11 @@ export class MasterPlaylistController extends videojs.EventTarget {
       const codecs = this.getCodecsOrExclude_();
 
       // no codecs, excluded
-      if (!codecs || !this.sourceUpdater_.canCodecSwitch()) {
+      if (!codecs || !this.sourceUpdater_.canChangeType()) {
         return;
       }
 
-      this.sourceUpdater_.codecSwitch(codecs);
+      this.sourceUpdater_.addOrChangeSourceBuffers(codecs);
     };
 
     this.mainSegmentLoader_.on('trackinfo', updateCodecs);
@@ -1347,7 +1347,7 @@ export class MasterPlaylistController extends videojs.EventTarget {
       return;
     }
     // check if codec switching is happening
-    if (this.sourceUpdater_.ready() && !this.sourceUpdater_.canCodecSwitch()) {
+    if (this.sourceUpdater_.ready() && !this.sourceUpdater_.canChangeType()) {
       const switchMessages = [];
 
       ['video', 'audio'].forEach((type) => {
@@ -1471,7 +1471,7 @@ export class MasterPlaylistController extends videojs.EventTarget {
 
       // only exclude playlsits by codec change, if codecs cannot switch
       // during playback.
-      if (!this.sourceUpdater_.canCodecSwitch()) {
+      if (!this.sourceUpdater_.canChangeType()) {
         // the video codec cannot change
         if (variantCodecs.video && codecs.video &&
           variantCodecs.video.type.toLowerCase() !== codecs.video.type.toLowerCase()) {
